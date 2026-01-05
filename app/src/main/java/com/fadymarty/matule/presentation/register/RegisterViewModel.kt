@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.fadymarty.matule.domain.use_case.validation.ValidateEmailUseCase
 import com.fadymarty.matule.domain.use_case.validation.ValidatePasswordConfirmUseCase
 import com.fadymarty.matule.domain.use_case.validation.ValidatePasswordUseCase
-import com.fadymarty.network.domain.model.User
-import com.fadymarty.network.domain.use_case.user.RegisterUseCase
+import com.fadymarty.matule_network.domain.model.User
+import com.fadymarty.matule_network.domain.use_case.user.RegisterUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

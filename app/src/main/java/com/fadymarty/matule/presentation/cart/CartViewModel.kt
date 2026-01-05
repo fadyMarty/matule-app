@@ -2,13 +2,13 @@ package com.fadymarty.matule.presentation.cart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fadymarty.network.domain.model.Cart
-import com.fadymarty.network.domain.use_case.cart.DeleteCartUseCase
-import com.fadymarty.network.domain.use_case.cart.GetCartsUseCase
-import com.fadymarty.network.domain.use_case.cart.ObserveCartsUseCase
-import com.fadymarty.network.domain.use_case.cart.UpdateCartUseCase
-import com.fadymarty.network.domain.use_case.order.CreateOrderUseCase
-import com.fadymarty.network.domain.use_case.shop.GetCatalogUseCase
+import com.fadymarty.matule_network.domain.model.Cart
+import com.fadymarty.matule_network.domain.use_case.cart.DeleteCartUseCase
+import com.fadymarty.matule_network.domain.use_case.cart.GetCartsUseCase
+import com.fadymarty.matule_network.domain.use_case.cart.ObserveCartsUseCase
+import com.fadymarty.matule_network.domain.use_case.cart.UpdateCartUseCase
+import com.fadymarty.matule_network.domain.use_case.order.CreateOrderUseCase
+import com.fadymarty.matule_network.domain.use_case.shop.GetProductsUseCase
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +24,7 @@ class CartViewModel(
     private val getCartsUseUse: GetCartsUseCase,
     private val deleteCartUseCase: DeleteCartUseCase,
     private val updateCartUseCase: UpdateCartUseCase,
-    private val getCatalogUseCase: GetCatalogUseCase,
+    private val getProductsUseCase: GetProductsUseCase,
     private val createOrderUseCase: CreateOrderUseCase,
 ) : ViewModel() {
 
@@ -43,7 +43,7 @@ class CartViewModel(
 
         viewModelScope.launch {
             val carts = async { getCartsUseUse() }
-            val products = async { getCatalogUseCase() }
+            val products = async { getProductsUseCase() }
 
             carts.await()
                 .onFailure {

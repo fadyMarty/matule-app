@@ -1,7 +1,7 @@
-package com.fadymarty.matule.presentation.projects
+package com.fadymarty.matule.presentation.project.create_project
 
 import androidx.lifecycle.ViewModel
-import com.fadymarty.network.domain.use_case.projects.CreateProjectUseCase
+import com.fadymarty.matule_network.domain.use_case.projects.CreateProjectUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

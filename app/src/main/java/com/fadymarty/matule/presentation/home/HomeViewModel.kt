@@ -2,13 +2,14 @@ package com.fadymarty.matule.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.fadymarty.network.domain.model.Product
-import com.fadymarty.network.domain.use_case.cart.AddProductToCartUseCase
-import com.fadymarty.network.domain.use_case.cart.DeleteCartUseCase
-import com.fadymarty.network.domain.use_case.cart.GetCartsUseCase
-import com.fadymarty.network.domain.use_case.cart.ObserveCartsUseCase
-import com.fadymarty.network.domain.use_case.shop.GetNewsUseCase
-import com.fadymarty.network.domain.use_case.shop.SearchProductsUseCase
+import com.fadymarty.matule_network.domain.model.Product
+import com.fadymarty.matule_network.domain.use_case.cart.AddProductToCartUseCase
+import com.fadymarty.matule_network.domain.use_case.cart.DeleteCartUseCase
+import com.fadymarty.matule_network.domain.use_case.cart.GetCartsUseCase
+import com.fadymarty.matule_network.domain.use_case.cart.ObserveCartsUseCase
+import com.fadymarty.matule_network.domain.use_case.shop.GetNewsUseCase
+import com.fadymarty.matule_network.domain.use_case.shop.GetProductsUseCase
+import com.fadymarty.matule_network.domain.use_case.shop.SearchProductsUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
@@ -23,11 +24,12 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val getNewsUseCase: GetNewsUseCase,
+    private val getProductsUseCase: GetProductsUseCase,
     private val searchProductsUseCase: SearchProductsUseCase,
     private val getCartsUseCase: GetCartsUseCase,
     private val observeCartsUseCase: ObserveCartsUseCase,
     private val addProductToCartUseCase: AddProductToCartUseCase,
-    private val deleteCartUseCase: DeleteCartUseCase,
+    private val deleteCartUseCase: DeleteCartUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -39,38 +41,31 @@ class HomeViewModel(
     private var searchJob: Job? = null
 
     init {
-        _state.update { it.copy(isLoading = true) }
-
-        observeCartsUseCase().onEach { carts ->
-            _state.update { it.copy(carts = carts) }
-        }.launchIn(viewModelScope)
-
         viewModelScope.launch {
-            val news = async {
-                getNewsUseCase()
-                    .onSuccess { news ->
-                        _state.update { it.copy(news = news) }
-                    }
-            }
-            val products = async {
-                searchProductsUseCase(
-                    query = _state.value.searchQuery
-                ).onSuccess { products ->
+            _state.update { it.copy(isLoading = true) }
+
+            val news = async { getNewsUseCase() }
+            val products = async { getProductsUseCase() }
+            val carts = async { getCartsUseCase() }
+
+            val newsResult = news.await()
+                .onSuccess { news ->
+                    _state.update { it.copy(news = news) }
+                }
+            val productsResult = products.await()
+                .onSuccess { products ->
                     _state.update {
                         it.copy(
                             products = products,
+                            currentProducts = products,
                             types = products.map { product ->
                                 product.typeCloses
                             }.distinct()
                         )
                     }
                 }
-            }
-            val carts = async { getCartsUseCase() }
-
-            val newsResult = news.await()
-            val productsResult = products.await()
             val cartsResult = carts.await()
+
             val results = listOf(newsResult, productsResult, cartsResult)
             if (results.any { it.isSuccess }) {
                 _state.update { it.copy(isLoading = false) }
@@ -78,26 +73,20 @@ class HomeViewModel(
                 eventChannel.send(HomeEvent.ShowErrorSnackBar)
             }
         }
+
+        observeCartsUseCase().onEach { carts ->
+            _state.update { it.copy(carts = carts) }
+        }.launchIn(viewModelScope)
     }
 
     fun onEvent(event: HomeEvent) {
         when (event) {
             is HomeEvent.SearchQueryChanged -> {
-                _state.update { it.copy(searchQuery = event.value) }
-                searchProducts()
-            }
-
-            HomeEvent.ClearSearchQuery -> {
-                _state.update { it.copy(searchQuery = "") }
-                searchProducts()
+                searchProducts(event.query)
             }
 
             is HomeEvent.SelectType -> {
-                _state.update { it.copy(type = event.type) }
-            }
-
-            is HomeEvent.AddProductToCart -> {
-                addProductToCart(event.product)
+                selectType(event.type)
             }
 
             is HomeEvent.ShowProductModal -> {
@@ -108,25 +97,31 @@ class HomeViewModel(
                 _state.update { it.copy(product = null) }
             }
 
+            is HomeEvent.AddProductToCart -> {
+                addProductToCart(event.product)
+            }
+
             else -> Unit
         }
     }
 
-    private fun searchProducts() {
+    private fun searchProducts(query: String) {
+        _state.update { it.copy(searchQuery = query) }
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(500)
             _state.update { it.copy(isLoading = true) }
-            searchProductsUseCase(
-                query = _state.value.searchQuery
-            )
+            searchProductsUseCase(query)
                 .onSuccess { products ->
                     _state.update {
                         it.copy(
                             products = products,
-                            types = products.map { product ->
-                                product.typeCloses
-                            }.distinct()
+                            currentProducts = if (_state.value.type != null) {
+                                products
+                                    .filter { product ->
+                                        product.typeCloses == _state.value.type
+                                    }
+                            } else products
                         )
                     }
                 }
@@ -137,25 +132,30 @@ class HomeViewModel(
         }
     }
 
+    private fun selectType(type: String?) {
+        _state.update { it.copy(type = type) }
+        _state.update {
+            it.copy(
+                currentProducts = if (type != null) {
+                    it.products.filter { product ->
+                        product.typeCloses == type
+                    }
+                } else it.products
+            )
+        }
+    }
+
     private fun addProductToCart(product: Product) {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            val cart = _state.value.carts.firstOrNull {
-                it.productId == product.id
-            }
+            _state.update { it.copy(isLoading = true, product = null) }
+            val cart = _state.value.carts.firstOrNull { it.productId == product.id }
             if (cart != null) {
                 deleteCartUseCase(cart.id!!)
-                    .onSuccess {
-                        _state.update { it.copy(product = null) }
-                    }
                     .onFailure {
                         eventChannel.send(HomeEvent.ShowErrorSnackBar)
                     }
             } else {
                 addProductToCartUseCase(product)
-                    .onSuccess {
-                        _state.update { it.copy(product = null) }
-                    }
                     .onFailure {
                         eventChannel.send(HomeEvent.ShowErrorSnackBar)
                     }

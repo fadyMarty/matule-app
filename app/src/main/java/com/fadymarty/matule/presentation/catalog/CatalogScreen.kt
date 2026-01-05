@@ -48,18 +48,24 @@ import org.koin.compose.viewmodel.koinViewModel
 fun CatalogRoot(
     onNavigateToProfile: () -> Unit,
     onNavigateToCart: () -> Unit,
-    viewModel: CatalogViewModel = koinViewModel(),
+    viewModel: CatalogViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is CatalogEvent.NavigateToProfile -> onNavigateToProfile()
-                is CatalogEvent.NavigateToCart -> onNavigateToCart()
-                is CatalogEvent.ShowErrorSnackBar -> {
+                CatalogEvent.NavigateToProfile -> {
+                    onNavigateToProfile()
+                }
+
+                CatalogEvent.NavigateToCart -> {
+                    onNavigateToCart()
+                }
+
+                CatalogEvent.ShowErrorSnackBar -> {
                     val job = launch {
                         snackbarHostState.showSnackbar(
                             message = context.getString(R.string.error_message),
@@ -76,9 +82,9 @@ fun CatalogRoot(
     }
 
     CatalogScreen(
-        snackbarHostState = snackbarHostState,
         state = state,
-        onEvent = viewModel::onEvent
+        onEvent = viewModel::onEvent,
+        snackbarHostState = snackbarHostState
     )
 }
 
@@ -86,18 +92,31 @@ fun CatalogRoot(
 private fun CatalogScreen(
     state: CatalogState,
     onEvent: (CatalogEvent) -> Unit,
-    snackbarHostState: SnackbarHostState,
+    snackbarHostState: SnackbarHostState
 ) {
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState
+            ) {
+                SnackBar(
+                    modifier = Modifier.padding(start = 20.dp, end = 8.dp),
+                    message = it.visuals.message,
+                    onDismiss = {
+                        it.dismiss()
+                    }
+                )
+            }
+        },
         topBar = {
             Row(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .statusBarsPadding()
-                    .padding(top = 28.dp)
                     .padding(horizontal = 20.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(38.dp)
+                    .padding(top = 28.dp, bottom = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(38.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 SearchInput(
                     modifier = Modifier.weight(1f),
@@ -105,82 +124,65 @@ private fun CatalogScreen(
                     onValueChange = {
                         onEvent(CatalogEvent.SearchQueryChanged(it))
                     },
-                    hint = "Искать описания",
                     onClearClick = {
-                        onEvent(CatalogEvent.ClearSearchQuery)
-                    }
+                        onEvent(CatalogEvent.SearchQueryChanged(""))
+                    },
+                    hint = "Искать описания"
                 )
                 Image(
                     modifier = Modifier
                         .size(32.dp)
                         .clickable(
                             interactionSource = null,
-                            indication = null,
-                            onClick = {
-                                onEvent(CatalogEvent.NavigateToProfile)
-                            }
-                        ),
+                            indication = null
+                        ) {
+                            onEvent(CatalogEvent.NavigateToProfile)
+                        },
                     painter = painterResource(R.drawable.img_user_icon),
-                    contentDescription = null
+                    contentDescription = null,
                 )
             }
-        },
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState,
-                snackbar = {
-                    SnackBar(
-                        modifier = Modifier.padding(start = 20.dp, end = 8.dp),
-                        message = it.visuals.message,
-                        onDismiss = {
-                            it.dismiss()
-                        }
-                    )
-                }
-            )
         }
     ) { innerPadding ->
         if (state.isLoading) {
             LoadingScreen(
-                modifier = Modifier
-                    .padding(
-                        top = innerPadding.calculateTopPadding()
-                    )
+                modifier = Modifier.padding(
+                    top = innerPadding.calculateTopPadding()
+                )
             )
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        top = innerPadding.calculateTopPadding() + 24.dp
+                        top = innerPadding.calculateTopPadding()
                     )
             ) {
-                if (state.products.isNotEmpty()) {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        item {
-                            ChipButton(
-                                selected = state.type == null,
-                                label = "Все",
-                                onClick = {
-                                    onEvent(CatalogEvent.SelectType(null))
-                                }
-                            )
-                        }
-                        items(state.types) { type ->
-                            ChipButton(
-                                selected = type == state.type,
-                                label = type,
-                                onClick = {
-                                    onEvent(CatalogEvent.SelectType(type))
-                                }
-                            )
-                        }
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        ChipButton(
+                            selected = state.type == null,
+                            onClick = {
+                                onEvent(CatalogEvent.SelectType(null))
+                            },
+                            label = "Все"
+                        )
                     }
-                    Spacer(Modifier.height(8.dp))
+                    items(state.types) { type ->
+                        ChipButton(
+                            selected = type == state.type,
+                            onClick = {
+                                onEvent(CatalogEvent.SelectType(type))
+                            },
+                            label = type
+                        )
+                    }
                 }
+                Spacer(Modifier.height(8.dp))
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -188,40 +190,43 @@ private fun CatalogScreen(
                     contentPadding = PaddingValues(
                         start = 20.dp,
                         top = 12.dp,
-                        end = 20.dp,
-                        bottom = 8.dp
+                        bottom = 8.dp,
+                        end = 20.dp
                     )
                 ) {
-                    items(state.products) { product ->
+                    items(state.currentProducts) { product ->
                         PrimaryCard(
                             title = product.title,
                             type = product.type,
                             price = "${product.price} ₽",
-                            added = state.carts.any { it.productId == product.id },
                             onClick = {
                                 onEvent(CatalogEvent.ShowProductModal(product))
                             },
                             onButtonClick = {
                                 onEvent(CatalogEvent.AddProductToCart(product))
-                            }
+                            },
+                            added = state.carts.any { it.productId == product.id }
                         )
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(16.dp))
                     }
                 }
                 if (state.carts.isNotEmpty()) {
                     CartButton(
-                        modifier = Modifier
-                            .padding(
-                                horizontal = 20.dp,
-                                vertical = 32.dp
-                            ),
+                        modifier = Modifier.padding(
+                            horizontal = 20.dp,
+                            vertical = 32.dp
+                        ),
                         onClick = {
                             onEvent(CatalogEvent.NavigateToCart)
                         },
-                        price = state.carts.sumOf { cart ->
-                            state.products.first {
-                                it.id == cart.productId
-                            }.price * cart.count
+                        price = state.products.filter { product ->
+                            state.carts.any { cart ->
+                                cart.productId == product.id
+                            }
+                        }.sumOf { product ->
+                            product.price * state.carts.first { cart ->
+                                cart.productId == product.id
+                            }.count
                         }
                     )
                 }
@@ -231,11 +236,11 @@ private fun CatalogScreen(
 
     state.product?.let { product ->
         ProductModal(
+            product = product,
             onDismissRequest = {
                 onEvent(CatalogEvent.HideProductModal)
             },
-            product = product,
-            onClick = {
+            onAddProductToCart = {
                 onEvent(CatalogEvent.AddProductToCart(product))
             }
         )

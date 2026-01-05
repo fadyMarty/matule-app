@@ -1,6 +1,6 @@
 package com.fadymarty.matule.presentation.profile
 
-import com.fadymarty.network.domain.model.User
+import com.fadymarty.matule_network.domain.model.User
 
 data class ProfileState(
     val isLoading: Boolean = true,

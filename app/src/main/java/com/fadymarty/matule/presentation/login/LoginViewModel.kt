@@ -3,7 +3,7 @@ package com.fadymarty.matule.presentation.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fadymarty.matule.domain.use_case.validation.ValidateEmailUseCase
-import com.fadymarty.network.domain.use_case.user.LoginUseCase
+import com.fadymarty.matule_network.domain.use_case.user.LoginUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -15,7 +15,7 @@ navigationCompose = "2.9.6"
 datastorePreferences = "1.2.0"
 pdfViewer = "2.3.7"
 coil = "3.3.0"
-matuleNetwork = "2.0.4"
+matuleNetwork = "2.0.8"
 matuleUiKit = "2.0.3"
 
 [libraries]

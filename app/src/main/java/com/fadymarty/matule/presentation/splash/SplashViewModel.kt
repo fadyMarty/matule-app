@@ -3,7 +3,7 @@ package com.fadymarty.matule.presentation.splash
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fadymarty.matule.presentation.navigation.Route
-import com.fadymarty.network.domain.use_case.user.GetPinUseCase
+import com.fadymarty.matule_network.domain.use_case.user.GetPinUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn

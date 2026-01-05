@@ -31,7 +31,7 @@ import com.fadymarty.matule_ui_kit.common.theme.MatuleTheme
 fun PinScreen(
     pin: String,
     onNumberClick: (Int) -> Unit,
-    onDeleteClick: () -> Unit,
+    onRemoveLastClick: () -> Unit,
     selectedNumber: Int?,
     title: String,
     subtitle: String = "",
@@ -101,7 +101,7 @@ fun PinScreen(
                                     .size(80.dp)
                                     .clip(CircleShape)
                                     .clickable {
-                                        onDeleteClick()
+                                        onRemoveLastClick()
                                     },
                                 contentAlignment = Alignment.Center
                             ) {

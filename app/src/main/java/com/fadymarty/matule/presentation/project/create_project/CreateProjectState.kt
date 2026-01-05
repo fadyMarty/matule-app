@@ -1,4 +1,4 @@
-package com.fadymarty.matule.presentation.projects
+package com.fadymarty.matule.presentation.project.create_project
 
 import com.fadymarty.matule_ui_kit.presentation.components.select.SelectItem
 

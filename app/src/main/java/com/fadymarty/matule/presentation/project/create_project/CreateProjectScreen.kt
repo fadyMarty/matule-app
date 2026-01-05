@@ -1,4 +1,4 @@
-package com.fadymarty.matule.presentation.projects
+package com.fadymarty.matule.presentation.project.create_project
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,17 +49,21 @@ private fun CreateProjectScreen(
         topBar = {
             SmallHeader(
                 modifier = Modifier
-                    .padding(horizontal = 20.dp)
-                    .statusBarsPadding(),
+                    .statusBarsPadding()
+                    .padding(top = 28.dp),
                 title = "Создать проект"
             )
         }
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    top = innerPadding.calculateTopPadding()
+                ),
             contentPadding = PaddingValues(
                 start = 20.dp,
-                top = innerPadding.calculateTopPadding() + 13.dp,
+                top = 13.dp,
                 end = 20.dp,
                 bottom = 15.dp
             ),

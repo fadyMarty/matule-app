@@ -62,7 +62,6 @@ fun ProfileRoot(
                 }
 
                 is ProfileEvent.NavigateToLogin -> onNavigateToLogin()
-
                 else -> Unit
             }
         }

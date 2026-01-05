@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import com.fadymarty.matule.domain.repository.SettingsRepository
-import com.fadymarty.network.di.dataStore
+import com.fadymarty.matule_network.di.dataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

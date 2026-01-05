@@ -92,12 +92,24 @@ fun NavigationRoot() {
         }
         composable<Route.CreatePin> {
             CreatePinRoot(
-                navController = navController
+                onNavigateToMainGraph = {
+                    navController.navigate(Route.MainGraph) {
+                        popUpTo(Route.CreatePin) {
+                            inclusive = true
+                        }
+                    }
+                }
             )
         }
         composable<Route.EnterPin> {
             EnterPinRoot(
-                navController = navController
+                onNavigateToMainGraph = {
+                    navController.navigate(Route.MainGraph) {
+                        popUpTo(Route.CreatePin) {
+                            inclusive = true
+                        }
+                    }
+                }
             )
         }
         navigation<Route.MainGraph>(

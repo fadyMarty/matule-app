@@ -1,6 +1,6 @@
 package com.fadymarty.matule.presentation.cart
 
-import com.fadymarty.network.domain.model.Cart
+import com.fadymarty.matule_network.domain.model.Cart
 
 sealed interface CartEvent {
     data class DeleteCart(val cart: Cart) : CartEvent

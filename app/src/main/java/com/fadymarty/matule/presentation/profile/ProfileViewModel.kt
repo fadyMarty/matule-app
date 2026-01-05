@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fadymarty.matule.domain.use_case.settings.IsNotificationsEnabledUseCase
 import com.fadymarty.matule.domain.use_case.settings.SetNotificationsEnabledUseCase
-import com.fadymarty.network.domain.use_case.user.ClearSessionUseCase
-import com.fadymarty.network.domain.use_case.user.GetCurrentUserUseCase
+import com.fadymarty.matule_network.domain.use_case.user.ClearSessionUseCase
+import com.fadymarty.matule_network.domain.use_case.user.GetCurrentUserUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

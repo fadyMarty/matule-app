@@ -41,13 +41,16 @@ sealed interface Route {
     data object Cart : Route
 
     @Serializable
-    data object ProjectsGraph : Route
+    data object ProjectGraph : Route
 
     @Serializable
     data object Projects : Route
 
     @Serializable
     data object CreateProject : Route
+
+    @Serializable
+    data class Project(val id: String) : Route
 
     @Serializable
     data object Profile : Route

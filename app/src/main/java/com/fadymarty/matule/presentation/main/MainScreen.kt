@@ -20,7 +20,8 @@ import com.fadymarty.matule.presentation.catalog.CatalogRoot
 import com.fadymarty.matule.presentation.home.HomeRoot
 import com.fadymarty.matule.presentation.navigation.Route
 import com.fadymarty.matule.presentation.profile.ProfileRoot
-import com.fadymarty.matule.presentation.projects.CreateProjectRoot
+import com.fadymarty.matule.presentation.project.create_project.CreateProjectRoot
+import com.fadymarty.matule.presentation.project.projects.ProjectsRoot
 import com.fadymarty.matule_ui_kit.presentation.components.tab_bar.TabBar
 import com.fadymarty.matule_ui_kit.presentation.components.tab_bar.TabBarItem
 
@@ -51,7 +52,7 @@ fun MainScreen(
                         label = "Проекты",
                         iconSize = 24.dp,
                         iconPadding = PaddingValues(top = 5.dp, bottom = 3.dp),
-                        route = Route.Projects
+                        route = Route.ProjectGraph
                     ),
                     TabBarItem(
                         icon = R.drawable.ic_profile,
@@ -61,7 +62,7 @@ fun MainScreen(
                 ),
                 currentRoute = currentRoute,
                 onItemClick = { item ->
-                    navigateToTap(navController, item.route)
+                    navigateToTab(navController, item.route)
 
                 }
             )
@@ -80,18 +81,25 @@ fun MainScreen(
             composable<Route.Catalog> {
                 CatalogRoot(
                     onNavigateToProfile = {
-                        navigateToTap(navController, Route.Profile)
+                        navigateToTab(navController, Route.Profile)
                     },
                     onNavigateToCart = {
                         rootNavController.navigate(Route.Cart)
                     }
                 )
             }
-            navigation<Route.ProjectsGraph>(
+            navigation<Route.ProjectGraph>(
                 startDestination = Route.Projects
             ) {
                 composable<Route.Projects> {
-
+                    ProjectsRoot(
+                        onNavigateToCreateProject = {
+                            navController.navigate(Route.CreateProject)
+                        },
+                        onNavigateToProject = {
+                            navController.navigate(Route.Project(it))
+                        }
+                    )
                 }
                 composable<Route.CreateProject> {
                     CreateProjectRoot()
@@ -112,7 +120,7 @@ fun MainScreen(
     }
 }
 
-private fun navigateToTap(navController: NavController, route: Any) {
+private fun navigateToTab(navController: NavController, route: Any) {
     navController.navigate(route) {
         popUpTo(navController.graph.findStartDestination().id) {
             saveState = true
