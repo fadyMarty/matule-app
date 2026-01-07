@@ -14,6 +14,7 @@ data class ProjectState(
         image = "",
         userId = ""
     ),
+    val category: String? = null,
     val showImagePickerModal: Boolean = false,
     val showGallery: Boolean = false,
     val showCamera: Boolean = false,

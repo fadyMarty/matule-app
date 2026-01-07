@@ -48,7 +48,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun CatalogRoot(
     onNavigateToProfile: () -> Unit,
     onNavigateToCart: () -> Unit,
-    viewModel: CatalogViewModel = koinViewModel()
+    viewModel: CatalogViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -92,7 +92,7 @@ fun CatalogRoot(
 private fun CatalogScreen(
     state: CatalogState,
     onEvent: (CatalogEvent) -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
 ) {
     Scaffold(
         snackbarHost = {
@@ -167,7 +167,7 @@ private fun CatalogScreen(
                         ChipButton(
                             selected = state.type == null,
                             onClick = {
-                                onEvent(CatalogEvent.SelectType(null))
+                                onEvent(CatalogEvent.TypeSelected(null))
                             },
                             label = "Все"
                         )
@@ -176,7 +176,7 @@ private fun CatalogScreen(
                         ChipButton(
                             selected = type == state.type,
                             onClick = {
-                                onEvent(CatalogEvent.SelectType(type))
+                                onEvent(CatalogEvent.TypeSelected(type))
                             },
                             label = type
                         )

@@ -108,9 +108,9 @@ private fun RegisterScreen(
                         SelectItem("Мужской"),
                         SelectItem("Женский")
                     ),
-                    selectedItem = state.gender,
+                    selectedItemLabel = state.gender,
                     onItemClick = {
-                        onEvent(RegisterEvent.SelectGender(it))
+                        onEvent(RegisterEvent.GenderSelected(it.label))
                     },
                     hint = "Пол"
                 )

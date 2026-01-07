@@ -29,7 +29,7 @@ class HomeViewModel(
     private val getCartsUseCase: GetCartsUseCase,
     private val observeCartsUseCase: ObserveCartsUseCase,
     private val addProductToCartUseCase: AddProductToCartUseCase,
-    private val deleteCartUseCase: DeleteCartUseCase
+    private val deleteCartUseCase: DeleteCartUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -44,15 +44,15 @@ class HomeViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
-            val news = async { getNewsUseCase() }
-            val products = async { getProductsUseCase() }
-            val carts = async { getCartsUseCase() }
+            val newsDeferred = async { getNewsUseCase() }
+            val productsDeferred = async { getProductsUseCase() }
+            val cartsDeferred = async { getCartsUseCase() }
 
-            val newsResult = news.await()
+            val newsResult = newsDeferred.await()
                 .onSuccess { news ->
                     _state.update { it.copy(news = news) }
                 }
-            val productsResult = products.await()
+            val productsResult = productsDeferred.await()
                 .onSuccess { products ->
                     _state.update {
                         it.copy(
@@ -64,7 +64,7 @@ class HomeViewModel(
                         )
                     }
                 }
-            val cartsResult = carts.await()
+            val cartsResult = cartsDeferred.await()
 
             val results = listOf(newsResult, productsResult, cartsResult)
             if (results.any { it.isSuccess }) {
@@ -85,8 +85,21 @@ class HomeViewModel(
                 searchProducts(event.query)
             }
 
-            is HomeEvent.SelectType -> {
-                selectType(event.type)
+            is HomeEvent.TypeSelected -> {
+                _state.update {
+                    it.copy(
+                        type = event.type,
+                        currentProducts = if (event.type != null) {
+                            it.products.filter { product ->
+                                product.typeCloses == event.type
+                            }
+                        } else it.products
+                    )
+                }
+            }
+
+            is HomeEvent.AddProductToCart -> {
+                addProductToCart(event.product)
             }
 
             is HomeEvent.ShowProductModal -> {
@@ -95,10 +108,6 @@ class HomeViewModel(
 
             HomeEvent.HideProductModal -> {
                 _state.update { it.copy(product = null) }
-            }
-
-            is HomeEvent.AddProductToCart -> {
-                addProductToCart(event.product)
             }
 
             else -> Unit
@@ -116,11 +125,13 @@ class HomeViewModel(
                     _state.update {
                         it.copy(
                             products = products,
-                            currentProducts = if (_state.value.type != null) {
-                                products
-                                    .filter { product ->
-                                        product.typeCloses == _state.value.type
-                                    }
+                            types = products.map { product ->
+                                product.typeCloses
+                            }.distinct(),
+                            currentProducts = if (it.type != null) {
+                                products.filter { product ->
+                                    product.typeCloses == it.type
+                                }
                             } else products
                         )
                     }
@@ -129,19 +140,6 @@ class HomeViewModel(
                     eventChannel.send(HomeEvent.ShowErrorSnackBar)
                 }
             _state.update { it.copy(isLoading = false) }
-        }
-    }
-
-    private fun selectType(type: String?) {
-        _state.update { it.copy(type = type) }
-        _state.update {
-            it.copy(
-                currentProducts = if (type != null) {
-                    it.products.filter { product ->
-                        product.typeCloses == type
-                    }
-                } else it.products
-            )
         }
     }
 

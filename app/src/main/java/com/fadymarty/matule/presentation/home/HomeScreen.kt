@@ -42,7 +42,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun HomeRoot(
-    viewModel: HomeViewModel = koinViewModel()
+    viewModel: HomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -78,7 +78,7 @@ fun HomeRoot(
 private fun HomeScreen(
     state: HomeState,
     onEvent: (HomeEvent) -> Unit,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
 ) {
     Scaffold(
         snackbarHost = {
@@ -170,7 +170,7 @@ private fun HomeScreen(
                             ChipButton(
                                 selected = state.type == null,
                                 onClick = {
-                                    onEvent(HomeEvent.SelectType(null))
+                                    onEvent(HomeEvent.TypeSelected(null))
                                 },
                                 label = "Все"
                             )
@@ -179,7 +179,7 @@ private fun HomeScreen(
                             ChipButton(
                                 selected = type == state.type,
                                 onClick = {
-                                    onEvent(HomeEvent.SelectType(type))
+                                    onEvent(HomeEvent.TypeSelected(type))
                                 },
                                 label = type
                             )

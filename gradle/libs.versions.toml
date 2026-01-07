@@ -16,6 +16,7 @@ coil = "3.3.0"
 datastorePreferences = "1.2.0"
 pdfViewer = "2.3.7"
 imagepickerkmp = "1.0.28"
+timeago = "4.2.0"
 matuleNetwork = "2.0.8"
 matuleUiKit = "2.0.4"
 
@@ -43,6 +44,7 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" 
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 pdf-viewer = { module = "io.github.afreakyelf:Pdf-Viewer", version.ref = "pdfViewer" }
 imagepickerkmp = { module = "io.github.ismoy:imagepickerkmp", version.ref = "imagepickerkmp" }
+timeago = { module = "com.github.marlonlom:timeago", version.ref = "timeago" }
 matule-network = { module = "com.github.fadyMarty:matule-network", version.ref = "matuleNetwork" }
 matule-ui-kit = { module = "com.github.fadyMarty:matule-ui-kit", version.ref = "matuleUiKit" }
 

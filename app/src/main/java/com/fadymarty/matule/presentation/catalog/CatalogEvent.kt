@@ -4,7 +4,7 @@ import com.fadymarty.matule_network.domain.model.Product
 
 sealed interface CatalogEvent {
     data class SearchQueryChanged(val query: String) : CatalogEvent
-    data class SelectType(val type: String?) : CatalogEvent
+    data class TypeSelected(val type: String?) : CatalogEvent
     data class ShowProductModal(val product: Product?) : CatalogEvent
     data object HideProductModal : CatalogEvent
     data class AddProductToCart(val product: Product) : CatalogEvent

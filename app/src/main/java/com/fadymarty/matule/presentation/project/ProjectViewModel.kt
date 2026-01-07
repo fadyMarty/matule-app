@@ -94,6 +94,12 @@ class ProjectViewModel(
                 }
             }
 
+            is ProjectEvent.CategorySelected -> {
+                _state.update {
+                    it.copy(category = event.category)
+                }
+            }
+
             ProjectEvent.ShowImagePickerModal -> {
                 _state.update { it.copy(showImagePickerModal = true) }
             }
@@ -150,7 +156,10 @@ class ProjectViewModel(
         getUserIdUseCase().onEach { userId ->
             userId?.let {
                 _state.update { it.copy(isLoading = true) }
-                val project = _state.value.project.copy(userId = userId)
+                val project = _state.value.project.copy(
+                    userId = userId,
+                    category = _state.value.category!!
+                )
                 createProjectUseCase(project)
                     .onSuccess {
                         eventChannel.send(ProjectEvent.NavigateToProjects)

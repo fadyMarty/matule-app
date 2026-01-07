@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.pdf.viewer)
     implementation(libs.imagepickerkmp)
+    implementation(libs.timeago)
     implementation(libs.matule.ui.kit)
     implementation(libs.matule.network)
 }

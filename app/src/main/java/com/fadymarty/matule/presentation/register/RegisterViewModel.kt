@@ -45,7 +45,7 @@ class RegisterViewModel(
                 _state.update { it.copy(dateBirthday = event.dateBirthday) }
             }
 
-            is RegisterEvent.SelectGender -> {
+            is RegisterEvent.GenderSelected -> {
                 _state.update { it.copy(gender = event.gender) }
             }
 
@@ -104,7 +104,7 @@ class RegisterViewModel(
             lastName = _state.value.lastName,
             secondName = _state.value.secondName,
             dateBirthday = _state.value.dateBirthday,
-            gender = _state.value.gender!!.label,
+            gender = _state.value.gender!!,
             email = _state.value.email,
             password = _state.value.password,
             passwordConfirm = _state.value.passwordConfirm

@@ -217,7 +217,7 @@ fun ProjectScreen(
                             SelectItem("Категория 2"),
                             SelectItem("Категория 3")
                         ),
-                        selectedItemLabel = null,
+                        selectedItemLabel = state.category,
                         onItemClick = {
                             onEvent(ProjectEvent.CategorySelected(it.label))
                         },
@@ -276,7 +276,7 @@ fun ProjectScreen(
                                 && state.project.dateStart.isNotEmpty()
                                 && state.project.dateEnd.isNotEmpty()
                                 && state.project.descriptionSource.isNotEmpty()
-                                && state.project.category.isNotEmpty()
+                                && state.category != null
                                 && state.project.image.isNotEmpty()
                     )
                 }

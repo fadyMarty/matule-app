@@ -33,6 +33,10 @@ import com.fadymarty.matule_ui_kit.presentation.components.snack_bar.SnackBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
@@ -134,9 +138,23 @@ private fun ProjectsScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(state.projects) { project ->
+                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSX")
+
+                    val dateTime = OffsetDateTime.parse(project.created, formatter)
+                    val now = OffsetDateTime.now(ZoneOffset.UTC)
+
+                    val days = ChronoUnit.DAYS.between(dateTime, now)
+
+                    val timeAgo = when {
+                        days <= 0 -> "Сегодня"
+                        days == 1L -> "Прошёл 1 день"
+                        days in 2..4 -> "Прошло $days дня"
+                        else -> "Прошло $days дней"
+                    }
+
                     ProjectCard(
                         title = project.title,
-                        date = project.created!!,
+                        date = timeAgo,
                         onOpenClick = {
                             onEvent(ProjectsEvent.NavigateToProject(project.id!!))
                         }

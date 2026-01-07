@@ -27,7 +27,7 @@ class CatalogViewModel(
     private val getCartsUseCase: GetCartsUseCase,
     private val observeCartsUseCase: ObserveCartsUseCase,
     private val addProductToCartUseCase: AddProductToCartUseCase,
-    private val deleteCartUseCase: DeleteCartUseCase
+    private val deleteCartUseCase: DeleteCartUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CatalogState())
@@ -42,10 +42,10 @@ class CatalogViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
-            val products = async { getProductsUseCase() }
-            val carts = async { getCartsUseCase() }
+            val productsDeferred = async { getProductsUseCase() }
+            val cartsDeferred = async { getCartsUseCase() }
 
-            val productsResult = products.await()
+            val productsResult = productsDeferred.await()
                 .onSuccess { products ->
                     _state.update {
                         it.copy(
@@ -57,7 +57,7 @@ class CatalogViewModel(
                         )
                     }
                 }
-            val cartsResult = carts.await()
+            val cartsResult = cartsDeferred.await()
 
             val results = listOf(productsResult, cartsResult)
             if (results.any { it.isSuccess }) {
@@ -78,8 +78,21 @@ class CatalogViewModel(
                 searchProducts(event.query)
             }
 
-            is CatalogEvent.SelectType -> {
-                selectType(event.type)
+            is CatalogEvent.TypeSelected -> {
+                _state.update {
+                    it.copy(
+                        type = event.type,
+                        currentProducts = if (event.type != null) {
+                            it.products.filter { product ->
+                                product.typeCloses == event.type
+                            }
+                        } else it.products
+                    )
+                }
+            }
+
+            is CatalogEvent.AddProductToCart -> {
+                addProductToCart(event.product)
             }
 
             is CatalogEvent.ShowProductModal -> {
@@ -88,10 +101,6 @@ class CatalogViewModel(
 
             CatalogEvent.HideProductModal -> {
                 _state.update { it.copy(product = null) }
-            }
-
-            is CatalogEvent.AddProductToCart -> {
-                addProductToCart(event.product)
             }
 
             CatalogEvent.NavigateToProfile -> {
@@ -121,11 +130,13 @@ class CatalogViewModel(
                     _state.update {
                         it.copy(
                             products = products,
-                            currentProducts = if (_state.value.type != null) {
-                                products
-                                    .filter { product ->
-                                        product.typeCloses == _state.value.type
-                                    }
+                            types = products.map { product ->
+                                product.typeCloses
+                            }.distinct(),
+                            currentProducts = if (it.type != null) {
+                                products.filter { product ->
+                                    product.typeCloses == it.type
+                                }
                             } else products
                         )
                     }
@@ -134,19 +145,6 @@ class CatalogViewModel(
                     eventChannel.send(CatalogEvent.ShowErrorSnackBar)
                 }
             _state.update { it.copy(isLoading = false) }
-        }
-    }
-
-    private fun selectType(type: String?) {
-        _state.update { it.copy(type = type) }
-        _state.update {
-            it.copy(
-                currentProducts = if (type != null) {
-                    it.products.filter { product ->
-                        product.typeCloses == type
-                    }
-                } else it.products
-            )
         }
     }
 
