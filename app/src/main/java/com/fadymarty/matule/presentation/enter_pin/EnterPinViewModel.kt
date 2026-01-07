@@ -1,4 +1,4 @@
-package com.fadymarty.matule.presentation.pin.enter_pin
+package com.fadymarty.matule.presentation.enter_pin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

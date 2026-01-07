@@ -1,4 +1,4 @@
-package com.fadymarty.matule.presentation.pin.enter_pin
+package com.fadymarty.matule.presentation.enter_pin
 
 sealed interface EnterPinEvent {
     data class NumberClicked(val number: Int) : EnterPinEvent

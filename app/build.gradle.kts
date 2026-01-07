@@ -62,9 +62,10 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.pdf.viewer)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.pdf.viewer)
+    implementation(libs.imagepickerkmp)
     implementation(libs.matule.ui.kit)
     implementation(libs.matule.network)
 }

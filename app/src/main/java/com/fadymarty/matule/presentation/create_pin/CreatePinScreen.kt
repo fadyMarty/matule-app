@@ -1,23 +1,23 @@
-package com.fadymarty.matule.presentation.pin.enter_pin
+package com.fadymarty.matule.presentation.create_pin
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.fadymarty.matule.presentation.pin.components.PinScreen
+import com.fadymarty.matule.presentation.components.PinScreen
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun EnterPinRoot(
+fun CreatePinRoot(
     onNavigateToMainGraph: () -> Unit,
-    viewModel: EnterPinViewModel = koinViewModel(),
+    viewModel: CreatePinViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                EnterPinEvent.NavigateToMainGraph -> {
+                CreatePinEvent.NavigateToMainGraph -> {
                     onNavigateToMainGraph()
                 }
 
@@ -26,26 +26,27 @@ fun EnterPinRoot(
         }
     }
 
-    EnterPinScreen(
+    CreatePinScreen(
         state = state,
-        onEvent = viewModel::onEvent
+        onEvent = viewModel::onEvent,
     )
 }
 
 @Composable
-private fun EnterPinScreen(
-    state: EnterPinState,
-    onEvent: (EnterPinEvent) -> Unit
+private fun CreatePinScreen(
+    state: CreatePinState,
+    onEvent: (CreatePinEvent) -> Unit,
 ) {
     PinScreen(
         pin = state.pin,
-        onNumberClick = {
-            onEvent(EnterPinEvent.NumberClicked(it))
+        onNumberClick = { number ->
+            onEvent(CreatePinEvent.NumberClicked(number))
         },
         onRemoveLastClick = {
-            onEvent(EnterPinEvent.RemoveLastNumber)
+            onEvent(CreatePinEvent.RemoveLastNumber)
         },
         selectedNumber = state.selectedNumber,
-        title = "Вход"
+        title = "Создайте пароль",
+        subtitle = "Для защиты ваших персональных данных"
     )
 }

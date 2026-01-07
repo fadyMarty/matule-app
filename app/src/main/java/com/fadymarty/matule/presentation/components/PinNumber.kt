@@ -1,4 +1,4 @@
-package com.fadymarty.matule.presentation.pin.components
+package com.fadymarty.matule.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

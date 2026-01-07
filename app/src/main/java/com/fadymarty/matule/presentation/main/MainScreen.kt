@@ -14,14 +14,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navigation
 import com.fadymarty.matule.R
 import com.fadymarty.matule.presentation.catalog.CatalogRoot
 import com.fadymarty.matule.presentation.home.HomeRoot
 import com.fadymarty.matule.presentation.navigation.Route
 import com.fadymarty.matule.presentation.profile.ProfileRoot
-import com.fadymarty.matule.presentation.project.create_project.CreateProjectRoot
-import com.fadymarty.matule.presentation.project.projects.ProjectsRoot
+import com.fadymarty.matule.presentation.project.ProjectRoot
+import com.fadymarty.matule.presentation.projects.ProjectsRoot
 import com.fadymarty.matule_ui_kit.presentation.components.tab_bar.TabBar
 import com.fadymarty.matule_ui_kit.presentation.components.tab_bar.TabBarItem
 
@@ -52,7 +51,7 @@ fun MainScreen(
                         label = "Проекты",
                         iconSize = 24.dp,
                         iconPadding = PaddingValues(top = 5.dp, bottom = 3.dp),
-                        route = Route.ProjectGraph
+                        route = Route.Projects
                     ),
                     TabBarItem(
                         icon = R.drawable.ic_profile,
@@ -88,22 +87,19 @@ fun MainScreen(
                     }
                 )
             }
-            navigation<Route.ProjectGraph>(
-                startDestination = Route.Projects
-            ) {
-                composable<Route.Projects> {
-                    ProjectsRoot(
-                        onNavigateToCreateProject = {
-                            navController.navigate(Route.CreateProject)
-                        },
-                        onNavigateToProject = {
-                            navController.navigate(Route.Project(it))
-                        }
-                    )
-                }
-                composable<Route.CreateProject> {
-                    CreateProjectRoot()
-                }
+            composable<Route.Projects> {
+                ProjectsRoot(
+                    onNavigateToProject = {
+                        navController.navigate(Route.Project(it))
+                    }
+                )
+            }
+            composable<Route.Project> {
+                ProjectRoot(
+                    onNavigateToProjects = {
+                        navController.navigateUp()
+                    }
+                )
             }
             composable<Route.Profile> {
                 ProfileRoot(

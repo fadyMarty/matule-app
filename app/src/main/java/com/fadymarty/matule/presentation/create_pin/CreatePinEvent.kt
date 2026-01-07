@@ -1,4 +1,4 @@
-package com.fadymarty.matule.presentation.pin.create_pin
+package com.fadymarty.matule.presentation.create_pin
 
 sealed interface CreatePinEvent {
     data class NumberClicked(val number: Int) : CreatePinEvent

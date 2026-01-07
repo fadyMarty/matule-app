@@ -9,13 +9,13 @@ import com.fadymarty.matule.domain.use_case.validation.ValidatePasswordConfirmUs
 import com.fadymarty.matule.domain.use_case.validation.ValidatePasswordUseCase
 import com.fadymarty.matule.presentation.cart.CartViewModel
 import com.fadymarty.matule.presentation.catalog.CatalogViewModel
+import com.fadymarty.matule.presentation.create_pin.CreatePinViewModel
+import com.fadymarty.matule.presentation.enter_pin.EnterPinViewModel
 import com.fadymarty.matule.presentation.home.HomeViewModel
 import com.fadymarty.matule.presentation.login.LoginViewModel
-import com.fadymarty.matule.presentation.pin.create_pin.CreatePinViewModel
-import com.fadymarty.matule.presentation.pin.enter_pin.EnterPinViewModel
 import com.fadymarty.matule.presentation.profile.ProfileViewModel
-import com.fadymarty.matule.presentation.project.create_project.CreateProjectViewModel
-import com.fadymarty.matule.presentation.project.projects.ProjectsViewModel
+import com.fadymarty.matule.presentation.project.ProjectViewModel
+import com.fadymarty.matule.presentation.projects.ProjectsViewModel
 import com.fadymarty.matule.presentation.register.RegisterViewModel
 import com.fadymarty.matule.presentation.splash.SplashViewModel
 import org.koin.core.module.dsl.bind
@@ -43,6 +43,6 @@ val appModule = module {
     viewModelOf(::HomeViewModel)
     viewModelOf(::CatalogViewModel)
     viewModelOf(::ProjectsViewModel)
-    viewModelOf(::CreateProjectViewModel)
+    viewModelOf(::ProjectViewModel)
     viewModelOf(::CartViewModel)
 }

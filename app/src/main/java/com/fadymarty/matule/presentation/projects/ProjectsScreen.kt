@@ -1,7 +1,8 @@
-package com.fadymarty.matule.presentation.project.projects
+package com.fadymarty.matule.presentation.projects
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -36,9 +37,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ProjectsRoot(
-    onNavigateToCreateProject: () -> Unit,
-    onNavigateToProject: (String) -> Unit,
-    viewModel: ProjectsViewModel = koinViewModel()
+    onNavigateToProject: (String?) -> Unit,
+    viewModel: ProjectsViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -47,10 +47,6 @@ fun ProjectsRoot(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                ProjectsEvent.NavigateToCreateProject -> {
-                    onNavigateToCreateProject()
-                }
-
                 is ProjectsEvent.NavigateToProject -> {
                     onNavigateToProject(event.id)
                 }
@@ -110,7 +106,7 @@ private fun ProjectsScreen(
                                 interactionSource = null,
                                 indication = null
                             ) {
-                                onEvent(ProjectsEvent.NavigateToCreateProject)
+                                onEvent(ProjectsEvent.NavigateToProject())
                             },
                         imageVector = MatuleIcons.Plus,
                         contentDescription = null,
@@ -130,19 +126,18 @@ private fun ProjectsScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(
-                        top = innerPadding.calculateTopPadding()
-                    ),
+                    .padding(top = innerPadding.calculateTopPadding()),
                 contentPadding = PaddingValues(
                     horizontal = 20.dp,
                     vertical = 18.dp
-                )
+                ),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(state.projects) { project ->
                     ProjectCard(
                         title = project.title,
-                        description = project.created!!,
-                        onClick = {
+                        date = project.created!!,
+                        onOpenClick = {
                             onEvent(ProjectsEvent.NavigateToProject(project.id!!))
                         }
                     )
