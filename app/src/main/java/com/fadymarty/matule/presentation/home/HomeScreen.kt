@@ -1,6 +1,5 @@
 package com.fadymarty.matule.presentation.home
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -14,19 +13,12 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.fadymarty.matule.R
 import com.fadymarty.matule.presentation.components.LoadingScreen
 import com.fadymarty.matule.presentation.components.ProductModal
 import com.fadymarty.matule.presentation.home.components.NewsCard
@@ -34,43 +26,17 @@ import com.fadymarty.matule_ui_kit.common.theme.MatuleTheme
 import com.fadymarty.matule_ui_kit.presentation.components.buttons.ChipButton
 import com.fadymarty.matule_ui_kit.presentation.components.cards.PrimaryCard
 import com.fadymarty.matule_ui_kit.presentation.components.input.SearchInput
-import com.fadymarty.matule_ui_kit.presentation.components.snack_bar.SnackBar
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
-@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun HomeRoot(
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                HomeEvent.ShowErrorSnackBar -> {
-                    val job = launch {
-                        snackbarHostState.showSnackbar(
-                            message = context.getString(R.string.error_message),
-                            duration = SnackbarDuration.Indefinite
-                        )
-                    }
-                    delay(5000)
-                    job.cancel()
-                }
-
-                else -> Unit
-            }
-        }
-    }
 
     HomeScreen(
         state = state,
-        onEvent = viewModel::onEvent,
-        snackbarHostState = snackbarHostState
+        onEvent = viewModel::onEvent
     )
 }
 
@@ -78,22 +44,8 @@ fun HomeRoot(
 private fun HomeScreen(
     state: HomeState,
     onEvent: (HomeEvent) -> Unit,
-    snackbarHostState: SnackbarHostState,
 ) {
     Scaffold(
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState
-            ) {
-                SnackBar(
-                    modifier = Modifier.padding(start = 20.dp, end = 8.dp),
-                    message = it.visuals.message,
-                    onDismiss = {
-                        it.dismiss()
-                    }
-                )
-            }
-        },
         topBar = {
             SearchInput(
                 modifier = Modifier

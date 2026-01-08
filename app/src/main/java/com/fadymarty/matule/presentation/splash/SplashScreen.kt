@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -15,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.fadymarty.matule.R
 import com.fadymarty.matule.presentation.navigation.Route
+import com.fadymarty.matule.presentation.util.ObserveAsEvents
 import com.fadymarty.matule_ui_kit.common.theme.MatuleTheme
 import com.fadymarty.matule_ui_kit.common.theme.RobotoFamily
 import org.koin.compose.viewmodel.koinViewModel
@@ -24,12 +24,10 @@ fun SplashRoot(
     onNavigate: (Route) -> Unit,
     viewModel: SplashViewModel = koinViewModel(),
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                is SplashEvent.Navigate -> {
-                    onNavigate(event.route)
-                }
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            is SplashEvent.Navigate -> {
+                onNavigate(event.route)
             }
         }
     }

@@ -8,5 +8,4 @@ sealed interface HomeEvent {
     data class ShowProductModal(val product: Product?) : HomeEvent
     data object HideProductModal : HomeEvent
     data class AddProductToCart(val product: Product) : HomeEvent
-    data object ShowErrorSnackBar : HomeEvent
 }

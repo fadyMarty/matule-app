@@ -1,10 +1,10 @@
 package com.fadymarty.matule.presentation.enter_pin
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fadymarty.matule.presentation.components.PinScreen
+import com.fadymarty.matule.presentation.util.ObserveAsEvents
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -14,15 +14,13 @@ fun EnterPinRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                EnterPinEvent.NavigateToMainGraph -> {
-                    onNavigateToMainGraph()
-                }
-
-                else -> Unit
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            EnterPinEvent.NavigateToMainGraph -> {
+                onNavigateToMainGraph()
             }
+
+            else -> Unit
         }
     }
 

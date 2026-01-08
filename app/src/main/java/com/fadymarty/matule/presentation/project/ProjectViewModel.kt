@@ -5,26 +5,27 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.fadymarty.matule.presentation.navigation.Route
+import com.fadymarty.matule.presentation.util.Constants
+import com.fadymarty.matule.presentation.util.MainSnackbarController
+import com.fadymarty.matule.presentation.util.SnackbarEvent
 import com.fadymarty.matule_network.domain.use_case.projects.CreateProjectUseCase
 import com.fadymarty.matule_network.domain.use_case.projects.GetProjectByIdUseCase
-import com.fadymarty.matule_network.domain.use_case.user.GetUserIdUseCase
+import com.fadymarty.matule_network.domain.use_case.user.GetUsersUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProjectViewModel(
     private val getProjectByIdUseCase: GetProjectByIdUseCase,
+    private val getUsersUseCase: GetUsersUseCase,
     private val createProjectUseCase: CreateProjectUseCase,
-    private val getUserIdUseCase: GetUserIdUseCase,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    val project = savedStateHandle.toRoute<Route.Project>()
+    val project: Route.Project = savedStateHandle.toRoute()
 
     private val _state = MutableStateFlow(ProjectState())
     val state = _state.asStateFlow()
@@ -33,28 +34,51 @@ class ProjectViewModel(
     val events = eventChannel.receiveAsFlow()
 
     init {
-        project.id?.let { id ->
-            viewModelScope.launch {
-                _state.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            project.id?.let { id ->
                 getProjectByIdUseCase(id)
                     .onSuccess { project ->
-                        _state.update {
-                            it.copy(
-                                project = project,
-                                isLoading = false
-                            )
-                        }
+                        _state.update { it.copy(project = project) }
                     }
                     .onFailure {
-                        eventChannel.send(ProjectEvent.ShowErrorSnackBar)
+                        MainSnackbarController.sendEvent(
+                            event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                        )
                     }
             }
+            getUsersUseCase()
+                .onSuccess { users ->
+                    _state.update {
+                        it.copy(
+                            users = users,
+                            isLoading = false
+                        )
+                    }
+                }
+                .onFailure {
+                    MainSnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
+                }
         }
     }
 
     fun onEvent(event: ProjectEvent) {
         when (event) {
+            is ProjectEvent.TypeSelected -> {
+                if (project.id != null) return
+                _state.update {
+                    it.copy(
+                        project = it.project.copy(
+                            typeProject = event.type
+                        )
+                    )
+                }
+            }
+
             is ProjectEvent.TitleChanged -> {
+                if (project.id != null) return
                 _state.update {
                     it.copy(
                         project = it.project.copy(
@@ -65,6 +89,7 @@ class ProjectViewModel(
             }
 
             is ProjectEvent.DateStartChanged -> {
+                if (project.id != null) return
                 _state.update {
                     it.copy(
                         project = it.project.copy(
@@ -75,6 +100,7 @@ class ProjectViewModel(
             }
 
             is ProjectEvent.DateEndChanged -> {
+                if (project.id != null) return
                 _state.update {
                     it.copy(
                         project = it.project.copy(
@@ -84,7 +110,23 @@ class ProjectViewModel(
                 }
             }
 
+            is ProjectEvent.UserSelected -> {
+                if (project.id != null) return
+                val user = _state.value.users.firstOrNull { user ->
+                    user.email == event.email
+                }
+                _state.update {
+                    it.copy(
+                        user = user,
+                        project = it.project.copy(
+                            userId = user?.id
+                        )
+                    )
+                }
+            }
+
             is ProjectEvent.DescriptionSourceChanged -> {
+                if (project.id != null) return
                 _state.update {
                     it.copy(
                         project = it.project.copy(
@@ -95,53 +137,61 @@ class ProjectViewModel(
             }
 
             is ProjectEvent.CategorySelected -> {
+                if (project.id != null) return
                 _state.update {
-                    it.copy(category = event.category)
+                    it.copy(
+                        project = it.project.copy(
+                            category = event.category
+                        )
+                    )
                 }
             }
 
-            ProjectEvent.ShowImagePickerModal -> {
-                _state.update { it.copy(showImagePickerModal = true) }
+            is ProjectEvent.ImageSelected -> {
+                if (project.id != null) return
+                _state.update {
+                    it.copy(
+                        project = it.project.copy(
+                            image = event.uri,
+                        ),
+                        showGallery = false,
+                        showCamera = false
+                    )
+                }
             }
 
-            ProjectEvent.HideImagePickerModal -> {
-                _state.update { it.copy(showImagePickerModal = false) }
+            ProjectEvent.ShowImagePicker -> {
+                _state.update { it.copy(showImagePicker = true) }
+            }
+
+            ProjectEvent.HideImagePicker -> {
+                _state.update { it.copy(showImagePicker = false) }
             }
 
             ProjectEvent.ShowGallery -> {
                 _state.update {
                     it.copy(
                         showGallery = true,
-                        showImagePickerModal = false
+                        showImagePicker = false
                     )
                 }
             }
 
-            ProjectEvent.HideGallery -> {
+            ProjectEvent.HideGalleryPicker -> {
                 _state.update { it.copy(showGallery = false) }
             }
 
-            ProjectEvent.ShowCamera -> {
+            ProjectEvent.ShowCameraPicker -> {
                 _state.update {
                     it.copy(
                         showCamera = true,
-                        showImagePickerModal = false
+                        showImagePicker = false
                     )
                 }
             }
 
-            ProjectEvent.HideCamera -> {
+            ProjectEvent.HideCameraPicker -> {
                 _state.update { it.copy(showCamera = false) }
-            }
-
-            is ProjectEvent.ImageSelected -> {
-                _state.update {
-                    it.copy(
-                        showGallery = false,
-                        showCamera = false,
-                        project = it.project.copy(image = event.uri)
-                    )
-                }
             }
 
             ProjectEvent.CreateProject -> {
@@ -153,22 +203,18 @@ class ProjectViewModel(
     }
 
     private fun createProject() {
-        getUserIdUseCase().onEach { userId ->
-            userId?.let {
-                _state.update { it.copy(isLoading = true) }
-                val project = _state.value.project.copy(
-                    userId = userId,
-                    category = _state.value.category!!
-                )
-                createProjectUseCase(project)
-                    .onSuccess {
-                        eventChannel.send(ProjectEvent.NavigateToProjects)
-                    }
-                    .onFailure {
-                        _state.update { it.copy(isLoading = false) }
-                        eventChannel.send(ProjectEvent.ShowErrorSnackBar)
-                    }
-            }
-        }.launchIn(viewModelScope)
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            createProjectUseCase(_state.value.project)
+                .onSuccess {
+                    eventChannel.send(ProjectEvent.NavigateBack)
+                }
+                .onFailure {
+                    MainSnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
+                }
+            _state.update { it.copy(isLoading = false) }
+        }
     }
 }

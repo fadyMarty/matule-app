@@ -2,6 +2,10 @@ package com.fadymarty.matule.presentation.cart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fadymarty.matule.presentation.util.Constants
+import com.fadymarty.matule.presentation.util.MainSnackbarController
+import com.fadymarty.matule.presentation.util.SnackbarController
+import com.fadymarty.matule.presentation.util.SnackbarEvent
 import com.fadymarty.matule_network.domain.model.Cart
 import com.fadymarty.matule_network.domain.use_case.cart.DeleteCartUseCase
 import com.fadymarty.matule_network.domain.use_case.cart.GetCartsUseCase
@@ -9,7 +13,6 @@ import com.fadymarty.matule_network.domain.use_case.cart.ObserveCartsUseCase
 import com.fadymarty.matule_network.domain.use_case.cart.UpdateCartUseCase
 import com.fadymarty.matule_network.domain.use_case.order.CreateOrderUseCase
 import com.fadymarty.matule_network.domain.use_case.shop.GetProductsUseCase
-import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,32 +38,31 @@ class CartViewModel(
     val events = eventChannel.receiveAsFlow()
 
     init {
-        _state.update { it.copy(isLoading = true) }
-
-        observeCartsUseCase().onEach { carts ->
-            _state.update { it.copy(carts = carts) }
-        }.launchIn(viewModelScope)
-
         viewModelScope.launch {
-            val carts = async { getCartsUseUse() }
-            val products = async { getProductsUseCase() }
-
-            carts.await()
-                .onFailure {
-                    eventChannel.send(CartEvent.ShowErrorSnackBar)
-                }
-            products.await()
+            _state.update { it.copy(isLoading = true) }
+            getProductsUseCase()
                 .onSuccess { products ->
                     _state.update {
                         it.copy(products = products)
                     }
                 }
                 .onFailure {
-                    eventChannel.send(CartEvent.ShowErrorSnackBar)
+                    SnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
                 }
+            getCartsUseUse()
+                .onFailure {
+                    SnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
+                }
+            _state.update { it.copy(isLoading = false) }
         }
 
-        _state.update { it.copy(isLoading = false) }
+        observeCartsUseCase().onEach { carts ->
+            _state.update { it.copy(carts = carts) }
+        }.launchIn(viewModelScope)
     }
 
     fun onEvent(event: CartEvent) {
@@ -99,13 +101,20 @@ class CartViewModel(
                     _state.value.carts.forEach { cart ->
                         deleteCartUseCase(cart.id!!)
                             .onFailure {
-                                eventChannel.send(CartEvent.ShowErrorSnackBar)
+                                SnackbarController.sendEvent(
+                                    event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                                )
                             }
                     }
-                    eventChannel.send(CartEvent.ShowSuccessSnackBar)
+                    eventChannel.send(CartEvent.NavigateToMainGraph)
+                    MainSnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.SUCCESS_ORDER_MESSAGE)
+                    )
                 }
                 .onFailure {
-                    eventChannel.send(CartEvent.ShowErrorSnackBar)
+                    SnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
                 }
             _state.update { it.copy(isLoading = false) }
         }
@@ -117,7 +126,9 @@ class CartViewModel(
             _state.value.carts.forEach { cart ->
                 deleteCartUseCase(cart.id!!)
                     .onFailure {
-                        eventChannel.send(CartEvent.ShowErrorSnackBar)
+                        SnackbarController.sendEvent(
+                            event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                        )
                     }
             }
             _state.update { it.copy(isLoading = false) }
@@ -129,7 +140,9 @@ class CartViewModel(
             _state.update { it.copy(isLoading = true) }
             updateCartUseCase(cart)
                 .onFailure {
-                    eventChannel.send(CartEvent.ShowErrorSnackBar)
+                    SnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
                 }
             _state.update { it.copy(isLoading = false) }
         }
@@ -140,7 +153,9 @@ class CartViewModel(
             _state.update { it.copy(isLoading = true) }
             deleteCartUseCase(cart.id!!)
                 .onFailure {
-                    eventChannel.send(CartEvent.ShowErrorSnackBar)
+                    SnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
                 }
             _state.update { it.copy(isLoading = false) }
         }

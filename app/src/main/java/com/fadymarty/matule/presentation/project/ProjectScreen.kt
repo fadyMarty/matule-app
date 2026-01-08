@@ -1,10 +1,8 @@
 package com.fadymarty.matule.presentation.project
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,14 +16,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +32,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.fadymarty.matule.R
 import com.fadymarty.matule.presentation.components.LoadingScreen
+import com.fadymarty.matule.presentation.util.ObserveAsEvents
 import com.fadymarty.matule_ui_kit.common.theme.MatuleTheme
 import com.fadymarty.matule_ui_kit.presentation.components.buttons.BigButton
 import com.fadymarty.matule_ui_kit.presentation.components.header.SmallHeader
@@ -46,53 +40,33 @@ import com.fadymarty.matule_ui_kit.presentation.components.input.Input
 import com.fadymarty.matule_ui_kit.presentation.components.modal.Modal
 import com.fadymarty.matule_ui_kit.presentation.components.select.Select
 import com.fadymarty.matule_ui_kit.presentation.components.select.SelectItem
-import com.fadymarty.matule_ui_kit.presentation.components.snack_bar.SnackBar
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
 import io.github.ismoy.imagepickerkmp.domain.config.PermissionAndConfirmationConfig
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
-@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun ProjectRoot(
-    onNavigateToProjects: () -> Unit,
+    onNavigateBack: () -> Unit,
     viewModel: ProjectViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                ProjectEvent.NavigateToProjects -> {
-                    onNavigateToProjects()
-                }
-
-                ProjectEvent.ShowErrorSnackBar -> {
-                    val job = launch {
-                        snackbarHostState.showSnackbar(
-                            message = context.getString(R.string.error_message),
-                            duration = SnackbarDuration.Indefinite
-                        )
-                    }
-                    delay(5000)
-                    job.cancel()
-                }
-
-                else -> Unit
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            ProjectEvent.NavigateBack -> {
+                onNavigateBack()
             }
+
+            else -> Unit
         }
     }
 
     ProjectScreen(
         state = state,
-        onEvent = viewModel::onEvent,
-        snackbarHostState = snackbarHostState,
+        onEvent = viewModel::onEvent
     )
 }
 
@@ -100,28 +74,15 @@ fun ProjectRoot(
 fun ProjectScreen(
     state: ProjectState,
     onEvent: (ProjectEvent) -> Unit,
-    snackbarHostState: SnackbarHostState,
 ) {
     val context = LocalContext.current
 
     Scaffold(
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState
-            ) {
-                SnackBar(
-                    modifier = Modifier.padding(start = 20.dp, end = 8.dp),
-                    message = it.visuals.message,
-                    onDismiss = {
-                        it.dismiss()
-                    }
-                )
-            }
-        },
         topBar = {
             SmallHeader(
                 modifier = Modifier
                     .statusBarsPadding()
+                    .padding(horizontal = 20.dp)
                     .padding(top = 28.dp),
                 title = "Создать проект"
             )
@@ -136,23 +97,28 @@ fun ProjectScreen(
         } else {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = innerPadding.calculateTopPadding()),
+                    .padding(
+                        top = innerPadding.calculateTopPadding()
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
                 contentPadding = PaddingValues(
                     start = 20.dp,
                     top = 13.dp,
                     end = 20.dp,
                     bottom = 15.dp
-                ),
-                horizontalAlignment = Alignment.CenterHorizontally
+                )
             ) {
                 item {
                     Select(
-                        items = emptyList(),
-                        selectedItemLabel = null,
-                        onItemClick = {},
-                        label = "Тип",
-                        hint = "Выберите  тип"
+                        items = listOf(
+                            SelectItem("Тип 1"),
+                            SelectItem("Тип 2")
+                        ),
+                        selectedItemLabel = state.project.typeProject,
+                        onItemClick = {
+                            onEvent(ProjectEvent.TypeSelected(it.label))
+                        },
+                        label = "Тип"
                     )
                     Spacer(Modifier.height(16.dp))
                 }
@@ -191,11 +157,14 @@ fun ProjectScreen(
                 }
                 item {
                     Select(
-                        items = emptyList(),
-                        selectedItemLabel = null,
-                        onItemClick = {},
-                        label = "Кому",
-                        hint = "Выберите  кому"
+                        items = state.users.map { SelectItem(it.email!!) },
+                        selectedItemLabel = state.users.firstOrNull {
+                            it.id == state.project.userId
+                        }?.email ?: "Выберите  кому",
+                        onItemClick = {
+                            onEvent(ProjectEvent.UserSelected(it.label))
+                        },
+                        label = "Кому"
                     )
                     Spacer(Modifier.height(16.dp))
                 }
@@ -214,15 +183,13 @@ fun ProjectScreen(
                     Select(
                         items = listOf(
                             SelectItem("Категория 1"),
-                            SelectItem("Категория 2"),
-                            SelectItem("Категория 3")
+                            SelectItem("Категория 2")
                         ),
-                        selectedItemLabel = state.category,
+                        selectedItemLabel = state.project.category,
                         onItemClick = {
                             onEvent(ProjectEvent.CategorySelected(it.label))
                         },
-                        label = "Категория",
-                        hint = "Выберите  категорию"
+                        label = "Категория"
                     )
                     Spacer(Modifier.height(37.dp))
                 }
@@ -231,8 +198,8 @@ fun ProjectScreen(
                         modifier = Modifier
                             .size(202.dp, 192.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .clickable {
-                                onEvent(ProjectEvent.ShowImagePickerModal)
+                            .clickable(state.project.id == null) {
+                                onEvent(ProjectEvent.ShowImagePicker)
                             },
                         model = ImageRequest.Builder(context)
                             .data(state.project.image)
@@ -266,56 +233,26 @@ fun ProjectScreen(
                             }
                         }
                     )
-                    Spacer(Modifier.height(32.dp))
-                    BigButton(
-                        label = "Подтвердить",
-                        onClick = {
-                            onEvent(ProjectEvent.CreateProject)
-                        },
-                        enabled = state.project.title.isNotEmpty()
-                                && state.project.dateStart.isNotEmpty()
-                                && state.project.dateEnd.isNotEmpty()
-                                && state.project.descriptionSource.isNotEmpty()
-                                && state.category != null
-                                && state.project.image.isNotEmpty()
-                    )
                 }
-            }
-        }
-    }
-
-    if (state.showImagePickerModal) {
-        Modal(
-            onDismissRequest = {
-                onEvent(ProjectEvent.HideImagePickerModal)
-            },
-            title = "Загрузка фото"
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 20.dp)
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            onEvent(ProjectEvent.ShowGallery)
-                        }
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
-                    text = "Галерея",
-                    style = MatuleTheme.typography.headlineRegular
-                )
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            onEvent(ProjectEvent.ShowCamera)
-                        }
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
-                    text = "Камера",
-                    style = MatuleTheme.typography.headlineRegular
-                )
+                if (state.project.id == null) {
+                    item {
+                        Spacer(Modifier.height(32.dp))
+                        BigButton(
+                            label = "Подтвердить",
+                            onClick = {
+                                onEvent(ProjectEvent.CreateProject)
+                            },
+                            enabled = state.project.typeProject != "Выберите тип"
+                                    && state.project.title.isNotBlank()
+                                    && state.project.dateStart.isNotBlank()
+                                    && state.project.dateEnd.isNotBlank()
+                                    && state.project.userId != null
+                                    && state.project.descriptionSource.isNotBlank()
+                                    && state.project.category != "Выберите  категорию"
+                                    && state.project.image != null
+                        )
+                    }
+                }
             }
         }
     }
@@ -326,10 +263,10 @@ fun ProjectScreen(
                 onEvent(ProjectEvent.ImageSelected(photos.first().uri))
             },
             onError = {
-                onEvent(ProjectEvent.HideGallery)
+                onEvent(ProjectEvent.HideGalleryPicker)
             },
             onDismiss = {
-                onEvent(ProjectEvent.HideGallery)
+                onEvent(ProjectEvent.HideGalleryPicker)
             }
         )
     }
@@ -341,10 +278,10 @@ fun ProjectScreen(
                     onEvent(ProjectEvent.ImageSelected(photo.uri))
                 },
                 onError = {
-                    onEvent(ProjectEvent.HideCamera)
+                    onEvent(ProjectEvent.HideCameraPicker)
                 },
                 onDismiss = {
-                    onEvent(ProjectEvent.HideCamera)
+                    onEvent(ProjectEvent.HideCameraPicker)
                 },
                 cameraCaptureConfig = CameraCaptureConfig(
                     permissionAndConfirmationConfig = PermissionAndConfirmationConfig(
@@ -353,5 +290,54 @@ fun ProjectScreen(
                 )
             )
         )
+    }
+
+    if (state.showImagePicker) {
+        Modal(
+            onDismissRequest = {
+                onEvent(ProjectEvent.HideImagePicker)
+            },
+            title = "Выбор фотографии"
+        ) {
+            Spacer(Modifier.height(8.dp))
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(
+                    top = 12.dp,
+                    bottom = 20.dp
+                )
+            ) {
+                item {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onEvent(ProjectEvent.ShowGallery)
+                            }
+                            .padding(
+                                horizontal = 20.dp,
+                                vertical = 14.dp
+                            ),
+                        text = "Галерея",
+                        style = MatuleTheme.typography.headlineRegular
+                    )
+                }
+                item {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onEvent(ProjectEvent.ShowCameraPicker)
+                            }
+                            .padding(
+                                horizontal = 20.dp,
+                                vertical = 14.dp
+                            ),
+                        text = "Камера",
+                        style = MatuleTheme.typography.headlineRegular
+                    )
+                }
+            }
+        }
     }
 }

@@ -9,11 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.fadymarty.matule.presentation.util.ObserveAsEvents
 import com.fadymarty.matule_ui_kit.common.theme.MatuleTheme
 import com.fadymarty.matule_ui_kit.presentation.components.buttons.BigButton
 import com.fadymarty.matule_ui_kit.presentation.components.input.Input
@@ -27,12 +27,10 @@ fun RegisterRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.events.collect { event ->
-            when (event) {
-                is RegisterEvent.NavigateToPassword -> onNavigateToPassword()
-                else -> Unit
-            }
+    ObserveAsEvents(viewModel.events) { event ->
+        when (event) {
+            is RegisterEvent.NavigateToPassword -> onNavigateToPassword()
+            else -> Unit
         }
     }
 

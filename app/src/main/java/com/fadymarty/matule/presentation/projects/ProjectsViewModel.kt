@@ -2,6 +2,9 @@ package com.fadymarty.matule.presentation.projects
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fadymarty.matule.presentation.util.Constants
+import com.fadymarty.matule.presentation.util.MainSnackbarController
+import com.fadymarty.matule.presentation.util.SnackbarEvent
 import com.fadymarty.matule_network.domain.use_case.projects.GetProjectsUseCase
 import com.fadymarty.matule_network.domain.use_case.projects.ObserveProjectsUseCase
 import kotlinx.coroutines.channels.Channel
@@ -32,9 +35,12 @@ class ProjectsViewModel(
                     _state.update { it.copy(isLoading = false) }
                 }
                 .onFailure {
-                    eventChannel.send(ProjectsEvent.ShowErrorSnackBar)
+                    MainSnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
                 }
         }
+
         observeProjectsUseCase().onEach { projects ->
             _state.update { it.copy(projects = projects) }
         }.launchIn(viewModelScope)
@@ -47,8 +53,6 @@ class ProjectsViewModel(
                     eventChannel.send(ProjectsEvent.NavigateToProject(event.id))
                 }
             }
-
-            else -> Unit
         }
     }
 }

@@ -8,6 +8,5 @@ sealed interface CartEvent {
     data class UpdateCart(val cart: Cart) : CartEvent
     data object CreateOrder : CartEvent
     data object NavigateBack : CartEvent
-    data object ShowErrorSnackBar : CartEvent
-    data object ShowSuccessSnackBar : CartEvent
+    data object NavigateToMainGraph : CartEvent
 }

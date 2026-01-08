@@ -13,5 +13,4 @@ sealed interface RegisterEvent {
     data object Register : RegisterEvent
     data object NavigateToPassword : RegisterEvent
     data object NavigateToCreatePin : RegisterEvent
-    data object ShowErrorSnackBar : RegisterEvent
 }

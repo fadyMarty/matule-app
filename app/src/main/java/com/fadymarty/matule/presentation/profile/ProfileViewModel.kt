@@ -4,6 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fadymarty.matule.domain.use_case.settings.IsNotificationsEnabledUseCase
 import com.fadymarty.matule.domain.use_case.settings.SetNotificationsEnabledUseCase
+import com.fadymarty.matule.presentation.util.Constants
+import com.fadymarty.matule.presentation.util.MainSnackbarController
+import com.fadymarty.matule.presentation.util.SnackbarEvent
 import com.fadymarty.matule_network.domain.use_case.user.ClearSessionUseCase
 import com.fadymarty.matule_network.domain.use_case.user.GetCurrentUserUseCase
 import kotlinx.coroutines.channels.Channel
@@ -68,7 +71,9 @@ class ProfileViewModel(
                     }
                 }
                 .onFailure {
-                    eventChannel.send(ProfileEvent.ShowErrorSnackBar)
+                    MainSnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
                 }
         }
     }

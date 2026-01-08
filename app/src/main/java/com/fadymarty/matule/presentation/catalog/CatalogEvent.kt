@@ -10,5 +10,4 @@ sealed interface CatalogEvent {
     data class AddProductToCart(val product: Product) : CatalogEvent
     data object NavigateToProfile : CatalogEvent
     data object NavigateToCart : CatalogEvent
-    data object ShowErrorSnackBar : CatalogEvent
 }

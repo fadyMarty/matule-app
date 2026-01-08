@@ -17,7 +17,7 @@ datastorePreferences = "1.2.0"
 pdfViewer = "2.3.7"
 imagepickerkmp = "1.0.28"
 timeago = "4.2.0"
-matuleNetwork = "2.0.8"
+matuleNetwork = "2.0.10"
 matuleUiKit = "2.0.4"
 
 [libraries]

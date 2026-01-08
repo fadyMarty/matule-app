@@ -6,5 +6,4 @@ sealed interface LoginEvent {
     data object Login : LoginEvent
     data object NavigateToRegister : LoginEvent
     data object NavigateToCreatePin : LoginEvent
-    data object ShowErrorSnackBar : LoginEvent
 }

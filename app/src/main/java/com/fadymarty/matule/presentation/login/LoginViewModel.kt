@@ -3,6 +3,9 @@ package com.fadymarty.matule.presentation.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fadymarty.matule.domain.use_case.validation.ValidateEmailUseCase
+import com.fadymarty.matule.presentation.util.Constants
+import com.fadymarty.matule.presentation.util.MainSnackbarController
+import com.fadymarty.matule.presentation.util.SnackbarEvent
 import com.fadymarty.matule_network.domain.use_case.user.LoginUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -64,7 +67,9 @@ class LoginViewModel(
                 }
                 .onFailure {
                     _state.update { it.copy(isLoading = false) }
-                    eventChannel.send(LoginEvent.ShowErrorSnackBar)
+                    MainSnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
                 }
         }
     }

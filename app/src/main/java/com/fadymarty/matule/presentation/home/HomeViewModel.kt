@@ -2,6 +2,9 @@ package com.fadymarty.matule.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fadymarty.matule.presentation.util.Constants
+import com.fadymarty.matule.presentation.util.MainSnackbarController
+import com.fadymarty.matule.presentation.util.SnackbarEvent
 import com.fadymarty.matule_network.domain.model.Product
 import com.fadymarty.matule_network.domain.use_case.cart.AddProductToCartUseCase
 import com.fadymarty.matule_network.domain.use_case.cart.DeleteCartUseCase
@@ -70,7 +73,9 @@ class HomeViewModel(
             if (results.any { it.isSuccess }) {
                 _state.update { it.copy(isLoading = false) }
             } else {
-                eventChannel.send(HomeEvent.ShowErrorSnackBar)
+                MainSnackbarController.sendEvent(
+                    event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                )
             }
         }
 
@@ -109,8 +114,6 @@ class HomeViewModel(
             HomeEvent.HideProductModal -> {
                 _state.update { it.copy(product = null) }
             }
-
-            else -> Unit
         }
     }
 
@@ -137,7 +140,9 @@ class HomeViewModel(
                     }
                 }
                 .onFailure {
-                    eventChannel.send(HomeEvent.ShowErrorSnackBar)
+                    MainSnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
                 }
             _state.update { it.copy(isLoading = false) }
         }
@@ -150,12 +155,16 @@ class HomeViewModel(
             if (cart != null) {
                 deleteCartUseCase(cart.id!!)
                     .onFailure {
-                        eventChannel.send(HomeEvent.ShowErrorSnackBar)
+                        MainSnackbarController.sendEvent(
+                            event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                        )
                     }
             } else {
                 addProductToCartUseCase(product)
                     .onFailure {
-                        eventChannel.send(HomeEvent.ShowErrorSnackBar)
+                        MainSnackbarController.sendEvent(
+                            event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                        )
                     }
             }
             _state.update { it.copy(isLoading = false) }

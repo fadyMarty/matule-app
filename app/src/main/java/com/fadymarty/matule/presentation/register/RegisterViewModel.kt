@@ -5,6 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.fadymarty.matule.domain.use_case.validation.ValidateEmailUseCase
 import com.fadymarty.matule.domain.use_case.validation.ValidatePasswordConfirmUseCase
 import com.fadymarty.matule.domain.use_case.validation.ValidatePasswordUseCase
+import com.fadymarty.matule.presentation.util.Constants
+import com.fadymarty.matule.presentation.util.MainSnackbarController
+import com.fadymarty.matule.presentation.util.SnackbarEvent
 import com.fadymarty.matule_network.domain.model.User
 import com.fadymarty.matule_network.domain.use_case.user.RegisterUseCase
 import kotlinx.coroutines.channels.Channel
@@ -118,7 +121,9 @@ class RegisterViewModel(
                 }
                 .onFailure {
                     _state.update { it.copy(isLoading = false) }
-                    eventChannel.send(RegisterEvent.ShowErrorSnackBar)
+                    MainSnackbarController.sendEvent(
+                        event = SnackbarEvent(Constants.ERROR_MESSAGE)
+                    )
                 }
         }
     }
