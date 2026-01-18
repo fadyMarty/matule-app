@@ -1,0 +1,6 @@
+[submodule "matule_network"]
+	path = matule_network
+	url = https://github.com/fadyMarty/matule-network
+[submodule "matule_ui_kit"]
+	path = matule_ui_kit
+	url = https://github.com/fadyMarty/matule-ui-kit
