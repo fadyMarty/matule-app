@@ -18,20 +18,31 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.fadymarty.matule.R
+import com.fadymarty.matule.common.util.ObserveAsEvents
 import com.fadymarty.matule.presentation.components.LoadingScreen
 import com.fadymarty.matule.presentation.components.ProductModal
-import com.fadymarty.matule.common.util.ObserveAsEvents
 import com.fadymarty.ui_kit.presentation.components.buttons.CartButton
 import com.fadymarty.ui_kit.presentation.components.buttons.ChipButton
 import com.fadymarty.ui_kit.presentation.components.cards.PrimaryCard
 import com.fadymarty.ui_kit.presentation.components.input.SearchInput
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
